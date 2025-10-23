@@ -17,6 +17,9 @@ namespace BusTicketReservation.Application.Services
 
         public async Task<List<AvailableBusDto>> SearchAvailableBusesAsync(string from, string to, DateTime journeyDate)
         {
+            // Normalize journey date to UTC
+            var journeyDateUtc = journeyDate.ToUniversalTime();
+
             // Validate inputs
             if (string.IsNullOrWhiteSpace(from))
                 throw new ArgumentException("From location cannot be empty");
@@ -24,11 +27,10 @@ namespace BusTicketReservation.Application.Services
             if (string.IsNullOrWhiteSpace(to))
                 throw new ArgumentException("To location cannot be empty");
 
-            if (journeyDate.Date < DateTime.UtcNow.Date)
-                throw new ArgumentException("Journey date cannot be in the past");
+            if (journeyDateUtc < DateTime.UtcNow)
+                throw new ArgumentException("Journey date-time cannot be in the past");
 
             // Get schedules
-            var journeyDateUtc = journeyDate.ToUniversalTime();
             var schedules = await _busScheduleRepository.GetSchedulesByRouteAndDateAsync(from, to, journeyDateUtc);
 
             var availableBuses = new List<AvailableBusDto>();
