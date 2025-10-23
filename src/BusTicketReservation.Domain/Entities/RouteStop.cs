@@ -12,7 +12,11 @@ namespace BusTicketReservation.Domain.Entities
 
         [Required]
         [MaxLength(100)]
-        public string StopName { get; set; } = string.Empty;
+        public string StopName { get; set; } = string.Empty; // Display name (e.g., "Dhaka Airport")
+
+        [Required]
+        [MaxLength(50)]
+        public string StopCode { get; set; } = string.Empty; // Unique search key (e.g., "dhaka_airport")
 
         [Required]
         public int StopOrder { get; set; }

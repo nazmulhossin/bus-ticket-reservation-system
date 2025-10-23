@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BusTicketReservation.Application.Contracts\BusTicketReservation.Application.Contracts.csproj" />
     <ProjectReference Include="..\BusTicketReservation.Domain\BusTicketReservation.Domain.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,6 @@
 ﻿using BusTicketReservation.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace BusTicketReservation.Infrastructure.Data
 {
@@ -21,19 +22,31 @@ namespace BusTicketReservation.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Ticket to BoardingStop relationship
+            modelBuilder.Entity<BusSchedule>()
+                .Property(b => b.JourneyDate)
+                .HasConversion(
+                    v => v.ToUniversalTime(),
+                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
             modelBuilder.Entity<Ticket>()
                 .HasOne(t => t.BoardingStop)
                 .WithMany()
                 .HasForeignKey(t => t.BoardingStopId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Ticket to DroppingStop relationship
             modelBuilder.Entity<Ticket>()
                 .HasOne(t => t.DroppingStop)
                 .WithMany()
                 .HasForeignKey(t => t.DroppingStopId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            SeedData.Seed(modelBuilder);
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(warnings =>
+                warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
         }
     }
 }

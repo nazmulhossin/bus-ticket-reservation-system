@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusTicketReservation.Domain.Entities
 {
@@ -7,6 +6,7 @@ namespace BusTicketReservation.Domain.Entities
     {
         [Key]
         public Guid Id { get; set; }
+
         [Required]
         [MaxLength(100)]
         public string RouteName { get; set; } = string.Empty; // e.g., "Dhaka-Chittagong"

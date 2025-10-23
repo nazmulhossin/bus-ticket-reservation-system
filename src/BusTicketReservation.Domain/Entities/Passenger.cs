@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BusTicketReservation.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace BusTicketReservation.Domain.Entities
 {
@@ -20,11 +21,5 @@ namespace BusTicketReservation.Domain.Entities
 
         // Navigation
         public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
-    }
-
-    public enum Gender
-    {
-        Male = 0,
-        Female = 1
     }
 }

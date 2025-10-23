@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BusTicketReservation.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace BusTicketReservation.Domain.Entities
 {
@@ -14,6 +15,10 @@ namespace BusTicketReservation.Domain.Entities
         [Required]
         [StringLength(100)]
         public string BusName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(20)]
+        public BusType BusType { get; set; }
 
         [Required]
         public int TotalSeats { get; set; }
