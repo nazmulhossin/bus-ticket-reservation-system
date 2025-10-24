@@ -12,7 +12,7 @@ namespace BusTicketReservation.Domain.Entities
 
         [Required]
         [MaxLength(10)]
-        public string SeatNumber { get; set; } = string.Empty;
+        public string SeatNumber { get; set; } = string.Empty; // i.e., A1, A2,...
 
         [Required]
         public int RowNumber { get; set; }

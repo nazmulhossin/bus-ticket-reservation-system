@@ -23,9 +23,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Register Repositories
 builder.Services.AddScoped<IBusScheduleRepository, BusScheduleRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 
 // Register Application Services
 builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 
 var app = builder.Build();

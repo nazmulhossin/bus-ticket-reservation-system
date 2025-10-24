@@ -1,4 +1,5 @@
 ﻿using BusTicketReservation.Application.Contracts.Interfaces.Repositories;
+using BusTicketReservation.Domain.Entities;
 using BusTicketReservation.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,15 @@ namespace BusTicketReservation.Infrastructure.Repositories
             return await _db.Tickets
                 .Where(t => t.BusScheduleId == busScheduleId)
                 .CountAsync();
+        }
+
+        public async Task<Dictionary<Guid, Ticket>> GetTicketsForBusScheduleAsync(Guid busScheduleId)
+        {
+            return await _db.Tickets
+                .Where(t => t.BusScheduleId == busScheduleId)
+                .Include(t => t.Passenger)
+                .AsNoTracking()
+                .ToDictionaryAsync(t => t.SeatId, t => t);
         }
     }
 }

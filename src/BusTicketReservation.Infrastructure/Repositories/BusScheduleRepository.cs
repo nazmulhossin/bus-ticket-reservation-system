@@ -28,5 +28,12 @@ namespace BusTicketReservation.Infrastructure.Repositories
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<BusSchedule?> GetBusScheduleWithBusAsync(Guid busScheduleId)
+        {
+            return await _db.BusSchedules
+                .Include(bs => bs.Bus)
+                .FirstOrDefaultAsync(bs => bs.Id == busScheduleId);
+        }
     }
 }
