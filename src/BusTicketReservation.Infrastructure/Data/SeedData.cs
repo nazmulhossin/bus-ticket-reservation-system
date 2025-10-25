@@ -54,8 +54,8 @@ namespace BusTicketReservation.Infrastructure.Data
                 new Bus
                 {
                     Id = bus5Id,
-                    CompanyName = "Kushtia Express",
-                    BusName = "Kushtia Deluxe",
+                    CompanyName = "SB",
+                    BusName = "SB Deluxe",
                     BusType = BusType.AC,
                     TotalSeats = 40
                 },
@@ -363,7 +363,7 @@ namespace BusTicketReservation.Infrastructure.Data
                         BusId = busId,
                         SeatNumber = seatLabel,
                         RowNumber = row,
-                        Status = Staus.Available
+                        Status = SeatStatus.Available
                     });
 
                     seatCounter++;
