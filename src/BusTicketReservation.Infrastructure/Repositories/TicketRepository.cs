@@ -29,5 +29,21 @@ namespace BusTicketReservation.Infrastructure.Repositories
                 .AsNoTracking()
                 .ToDictionaryAsync(t => t.SeatId, t => t);
         }
+
+        public async Task<bool> IsSeatBookedForScheduleAsync(Guid seatId, Guid busScheduleId)
+        {
+            return await _db.Tickets
+                .AnyAsync(t => t.SeatId == seatId && t.BusScheduleId == busScheduleId);
+        }
+
+        public async Task AddAsync(Ticket ticket)
+        {
+            await _db.Tickets.AddAsync(ticket);
+        }
+
+        public async Task<Ticket?> GetTicketByIdAsync(Guid ticketId)
+        {
+            return await _db.Tickets.FindAsync(ticketId);
+        }
     }
 }

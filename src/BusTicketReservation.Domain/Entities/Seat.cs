@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BusTicketReservation.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace BusTicketReservation.Domain.Entities
 {
@@ -19,17 +20,10 @@ namespace BusTicketReservation.Domain.Entities
 
         [Required]
         [MaxLength(20)]
-        public Staus Status { get; set; }
+        public SeatStatus Status { get; set; }
 
         // Navigation properties
         public Bus Bus { get; set; } = null!;
         public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
-    }
-
-    public enum Staus
-    {
-        Available = 0,
-        Booked = 1,
-        Sold = 2
     }
 }

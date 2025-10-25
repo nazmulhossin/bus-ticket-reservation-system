@@ -5,11 +5,17 @@ using BusTicketReservation.Infrastructure.Data;
 using BusTicketReservation.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false));
+    });
 builder.Services.AddOpenApi();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -22,8 +28,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Register Repositories
 builder.Services.AddScoped<IBusScheduleRepository, BusScheduleRepository>();
+builder.Services.AddScoped<IPassengerRepository, PassengerRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
+builder.Services.AddScoped<IUnitOfWork,  UnitOfWork>();
 
 // Register Application Services
 builder.Services.AddScoped<ISearchService, SearchService>();

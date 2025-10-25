@@ -1,5 +1,6 @@
 ﻿using BusTicketReservation.Application.Contracts.Interfaces.Repositories;
 using BusTicketReservation.Domain.Entities;
+using BusTicketReservation.Domain.Enums;
 using BusTicketReservation.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,21 @@ namespace BusTicketReservation.Infrastructure.Repositories
                 .OrderBy(s => s.RowNumber)
                 .ThenBy(s => s.SeatNumber)
                 .ToListAsync();
+        }
+
+        public async Task<Seat?> GetSeatByIdAsync(Guid seatId)
+        {
+            return await _db.Seats.FindAsync(seatId);
+        }
+
+        public async Task UpdateSeatStatusAsync(Guid seatId, SeatStatus status)
+        {
+            var seat = await GetSeatByIdAsync(seatId);
+            if (seat != null)
+            {
+                seat.Status = status;
+                _db.Seats.Update(seat);
+            }
         }
     }
 }

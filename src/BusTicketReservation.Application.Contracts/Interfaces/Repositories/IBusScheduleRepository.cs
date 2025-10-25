@@ -6,5 +6,6 @@ namespace BusTicketReservation.Application.Contracts.Interfaces.Repositories
     {
         Task<List<BusSchedule>> GetSchedulesByRouteAndDateAsync(string from, string to, DateTime journeyDate);
         Task<BusSchedule?> GetBusScheduleWithBusAsync(Guid busScheduleId);
+        Task<BusSchedule?> GetBusScheduleWithBusAndRouteAsync(Guid busScheduleId);
     }
 }
