@@ -1,18 +1,18 @@
 ﻿using BusTicketReservation.Application.Contracts.DTOs;
 using BusTicketReservation.Application.Contracts.Interfaces.Repositories;
 using BusTicketReservation.Application.Contracts.Interfaces.Services;
-using BusTicketReservation.Domain.Entities;
-using System.Collections.Generic;
 
 namespace BusTicketReservation.Application.Services
 {
     public class RouteService : IRouteService
     {
         private readonly IRouteRepository _routeRepository;
+        private readonly IBusScheduleRepository _busScheduleRepository;
 
-        public RouteService(IRouteRepository routeRepository)
+        public RouteService(IRouteRepository routeRepository, IBusScheduleRepository busScheduleRepository)
         {
             _routeRepository = routeRepository;
+            _busScheduleRepository = busScheduleRepository;
         }
 
         public async Task<List<SearchRouteStopResultDto>> GetRouteStopSuggestionsAsync(string searchTerm, int limit = 5)
@@ -38,6 +38,24 @@ namespace BusTicketReservation.Application.Services
                 .ToList();
 
             return uniqueRouteStops;
+        }
+
+        public async Task<List<RouteStopDto>> GetBoardingDroppingStopsAsync(Guid busScheduleId)
+        {
+            var busSchedule = await _busScheduleRepository.GetBusScheduleWithRouteAsync(busScheduleId);
+            if (busSchedule == null)
+                return new List<RouteStopDto>();
+
+            return busSchedule.Route.RouteStops
+                .Select(rs => new RouteStopDto
+                {
+                    StopCode = rs.StopCode,
+                    StopName = rs.StopName,
+                    StopOrder = rs.StopOrder,
+                    ArrivalTime = busSchedule.JourneyDate.Date.Add(busSchedule.DepartureTime.Add(rs.TimeOffset))
+                }) 
+                .OrderBy(rs => rs.StopOrder)
+                .ToList();
         }
     }
 }

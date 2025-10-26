@@ -44,5 +44,13 @@ namespace BusTicketReservation.Infrastructure.Repositories
                     .ThenInclude(r => r.RouteStops)
                 .FirstOrDefaultAsync(bs => bs.Id == busScheduleId);
         }
+
+        public async Task<BusSchedule?> GetBusScheduleWithRouteAsync(Guid busScheduleId)
+        {
+            return await _db.BusSchedules
+                .Include(bs => bs.Route)
+                    .ThenInclude(r => r.RouteStops)
+                .FirstOrDefaultAsync(bs => bs.Id == busScheduleId);
+        }
     }
 }
