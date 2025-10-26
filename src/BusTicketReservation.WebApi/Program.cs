@@ -30,13 +30,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IBusScheduleRepository, BusScheduleRepository>();
 builder.Services.AddScoped<IPassengerRepository, PassengerRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<IRouteRepository, RouteRepository>();
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<IUnitOfWork,  UnitOfWork>();
 
 // Register Application Services
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-
+builder.Services.AddScoped<IRouteService, RouteService>();
 
 var app = builder.Build();
 

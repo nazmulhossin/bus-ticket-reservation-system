@@ -31,41 +31,41 @@ namespace BusTicketReservation.Application.Services
                 throw new ArgumentException("Journey date-time cannot be in the past");
 
             // Get schedules
-            var schedules = await _busScheduleRepository.GetSchedulesByRouteAndDateAsync(from, to, journeyDateUtc);
+            var busSchedules = await _busScheduleRepository.GetSchedulesByRouteAndDateAsync(from, to, journeyDateUtc);
 
             var availableBuses = new List<AvailableBusDto>();
 
-            foreach (var schedule in schedules)
+            foreach (var busSchedule in busSchedules)
             {
                 // Find boarding and dropping stops
-                var boardingStop = schedule.Route.RouteStops
+                var boardingStop = busSchedule.Route.RouteStops
                     .First(rs => rs.StopCode == from);
-                var droppingStop = schedule.Route.RouteStops
+                var droppingStop = busSchedule.Route.RouteStops
                     .First(rs => rs.StopCode == to);
 
                 // Calculate actual boarding and dropping times using TimeOffset
-                var boardingTime = schedule.DepartureTime.Add(boardingStop.TimeOffset);
-                var droppingTime = schedule.DepartureTime.Add(droppingStop.TimeOffset);
+                var boardingTime = busSchedule.DepartureTime.Add(boardingStop.TimeOffset);
+                var droppingTime = busSchedule.DepartureTime.Add(droppingStop.TimeOffset);
 
                 // Calculate actual start and arrival DateTimes
-                var startDateTime = schedule.JourneyDate.Date.Add(boardingTime);
-                var arrivalDateTime = schedule.JourneyDate.Date.Add(droppingTime);
+                var startDateTime = busSchedule.JourneyDate.Date.Add(boardingTime);
+                var arrivalDateTime = busSchedule.JourneyDate.Date.Add(droppingTime);
 
                 // Calculate seats left
-                var bookedSeats = await _ticketRepository.GetBookedSeatsCountAsync(schedule.Id);
-                var seatsLeft = schedule.Bus.TotalSeats - bookedSeats;
+                var bookedSeats = await _ticketRepository.GetBookedSeatsCountAsync(busSchedule.Id);
+                var seatsLeft = busSchedule.Bus.TotalSeats - bookedSeats;
 
                 availableBuses.Add(new AvailableBusDto
                 {
-                    BusScheduleId = schedule.Id,
-                    CompanyName = schedule.Bus.CompanyName,
-                    BusName = schedule.Bus.BusName,
-                    BusType = schedule.Bus.BusType.ToString(),
-                    StartTime = startDateTime.ToString("hh:mm tt"),
-                    ArrivalTime = arrivalDateTime.ToString("hh:mm tt"),
+                    BusScheduleId = busSchedule.Id,
+                    CompanyName = busSchedule.Bus.CompanyName,
+                    BusName = busSchedule.Bus.BusName,
+                    BusType = busSchedule.Bus.BusType.ToString(),
+                    StartTime = startDateTime,
+                    ArrivalTime = arrivalDateTime,
                     SeatsLeft = seatsLeft,
-                    Price = schedule.Price,
-                    RouteName = schedule.Route.RouteName
+                    Price = busSchedule.Price,
+                    RouteName = busSchedule.Route.RouteName
                 });
             }
 
