@@ -14,8 +14,8 @@
 
 :root {
   --background: #ffffff;
-  --primary: oklch(0.577 0.245 27.325);
-  --primary-dark: oklch(55.558% 0.20672 27.277);
+  --primary: #d32f2f;
+  --primary-dark: #b71c1c;
   --accent: #2e7d32;
   --text-primary: #27313b;
   --text-secondary: #7f8c8d;
