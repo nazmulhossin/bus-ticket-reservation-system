@@ -1,4 +1,4 @@
-import { RouteStop } from "@/types/types";
+import { BusInfo, BusStop, RouteStop, SeatPlan } from "@/types/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:7187/api';
 
@@ -28,5 +28,78 @@ export async function getRouteStopSuggestions(searchTerm: string): Promise<Route
   } catch (error) {
     console.error("Error fetching route suggestions:", error);
     return [];
+  }
+}
+
+export async function searchAvailableBuses(fromCode: string, toCode: string, journeyDate: string): Promise<BusInfo[]> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/Search/available-buses?from=${fromCode}&to=${toCode}&journeyDate=${journeyDate}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch available buses');
+    }
+
+
+    const data: BusInfo[] = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching available buses:', error);
+    throw error;
+  }
+}
+
+export async function getSeatPlan(busScheduleId: string): Promise<SeatPlan> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/Booking/seat-plan/${busScheduleId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch seat plan');
+    }
+
+    const data: SeatPlan = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching seat plan:', error);
+    throw error;
+  }
+}
+
+export async function getBusStops(busScheduleId: string): Promise<BusStop[]> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/Route/bus-schedule/${busScheduleId}/stops`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch bus stops');
+    }
+
+    const data: BusStop[] = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching bus stops:', error);
+    throw error;
   }
 }

@@ -1,12 +1,14 @@
-'use client';
+"use client";
 
 import { useDebounce } from "@/hooks/useDebounce";
 import { getRouteStopSuggestions } from "@/lib/api";
 import { RouteStop } from "@/types/types";
 import { Loader2, MapPin } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function SearchSection() {
+  const router = useRouter();
   const [fromInput, setFromInput] = useState("");
   const [toInput, setToInput] = useState("");
   const [date, setDate] = useState("");
@@ -22,6 +24,7 @@ export default function SearchSection() {
 
   const [isLoadingFrom, setIsLoadingFrom] = useState(false);
   const [isLoadingTo, setIsLoadingTo] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   const fromRef = useRef<HTMLDivElement>(null);
   const toRef = useRef<HTMLDivElement>(null);
@@ -100,17 +103,26 @@ export default function SearchSection() {
       return;
     }
 
-    const finalFromCode = fromCode || fromInput;
-    const finalToCode = toCode || toInput;
+    setIsSearching(true);
+    try {
+      // Redirect to search results page with query parameters
+      const searchParams = new URLSearchParams({
+        from: fromCode,
+        to: toCode,
+        date: date,
+        fromName: fromInput,
+        toName: toInput
+      });
 
-    console.log({
-      from: fromInput,
-      fromCode: finalFromCode,
-      to: toInput,
-      toCode: finalToCode,
-      date,
-    });
+      router.push(`buses/search?${searchParams.toString()}`);
+    } catch (error) {
+      console.error("Search error:", error);
+      alert("Failed to search buses. Please try again.");
+    } finally {
+      setIsSearching(false);
+    }
   };
+
   return (
     <section className="relative mt-[-10rem] mb-16 mx-auto">
       <div className="max-w-6xl mx-auto bg-background rounded-lg px-8 py-12 shadow-md">
