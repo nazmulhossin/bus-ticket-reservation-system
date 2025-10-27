@@ -45,3 +45,35 @@ export interface BusStop {
   stopOrder: number;
   arrivalTime: string;
 }
+
+export interface BookSeatRequest {
+  busScheduleId: string;
+  seatIds: string[];
+  boardingStopCode: string;
+  droppingStopCode: string;
+  passengerName: string;
+  mobileNumber: string;
+  passengerGender: string;
+}
+
+export interface BookingSummary {
+  passengerName: string;
+  mobileNumber: string;
+  gender: string;
+  companyName: string;
+  busName: string;
+  seatNumbers: string[];
+  boardingStop: string;
+  droppingStop: string;
+  boardingTime: string;
+  droppingTime: string;
+  journeyDate: string;
+  totalPrice: number;
+  bookingDate: string;
+}
+
+export interface BookSeatResponse {
+  success: boolean;
+  message: string;
+  bookingSummary: BookingSummary;
+}

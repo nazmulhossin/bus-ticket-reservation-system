@@ -1,4 +1,4 @@
-import { BusInfo, BusStop, RouteStop, SeatPlan } from "@/types/types";
+import { BookSeatRequest, BookSeatResponse, BusInfo, BusStop, RouteStop, SeatPlan } from "@/types/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:7187/api';
 
@@ -100,6 +100,32 @@ export async function getBusStops(busScheduleId: string): Promise<BusStop[]> {
     return data;
   } catch (error) {
     console.error('Error fetching bus stops:', error);
+    throw error;
+  }
+}
+
+export async function bookSeats(bookingData: BookSeatRequest): Promise<BookSeatResponse> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/Booking/book-seat`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to book seats');
+    }
+
+    const data: BookSeatResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error booking seats:', error);
     throw error;
   }
 }

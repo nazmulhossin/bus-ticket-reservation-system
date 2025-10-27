@@ -2,10 +2,10 @@
 
 import Legend from "@/components/booking/Legend";
 import PageHero from "@/components/booking/PageHero";
-import { getBusStops, getSeatPlan } from "@/lib/api";
+import { bookSeats, getBusStops, getSeatPlan } from "@/lib/api";
 import { SeatPlan, BusStop, Seat } from "@/types/types";
 import { LifeBuoy, Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 export default function BookingPage() {
@@ -21,15 +21,18 @@ export default function BookingPage() {
 }
 
 function BookingContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [seatPlan, setSeatPlan] = useState<SeatPlan | null>(null);
   const [busStops, setBusStops] = useState<BusStop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     boardingPoint: "",
     droppingPoint: "",
+    passengerName: "",
     gender: "",
     mobileNumber: ""
   });
@@ -85,19 +88,19 @@ function BookingContent() {
       return `${baseClass} bg-green-500 text-white border-green-600`;
     }
 
-    if (seat.status === "Booked" && seat.gender === "Male") {
+    if (seat.status === "Booked" && seat.gender === "Female") {
       return `${baseClass} bg-pink-400 border-pink-500 cursor-not-allowed`;
     }
 
-    if (seat.status === "Booked" && seat.gender === "Female") {
+    if (seat.status === "Booked" && seat.gender === "Male") {
       return `${baseClass} bg-purple-400 border-purple-500 cursor-not-allowed`;
     }
 
-    if (seat.status === 'Sold' && seat.gender === "Male") {
+    if (seat.status === "Sold" && seat.gender === "Male") {
       return `${baseClass} bg-purple-600 border-purple-700 cursor-not-allowed`;
     }
 
-    if (seat.status === 'Sold' && seat.gender === "Female") {
+    if (seat.status === "Sold" && seat.gender === "Female") {
       return `${baseClass} bg-pink-600 border-pink-700 cursor-not-allowed`;
     }
 
@@ -109,9 +112,14 @@ function BookingContent() {
     return selectedSeats.length * seatPlan.price;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedSeats.length === 0) {
       alert("Please select at least one seat");
+      return;
+    }
+
+    if (!formData.passengerName) {
+      alert("Please enter passenger name");
       return;
     }
 
@@ -120,13 +128,44 @@ function BookingContent() {
       return;
     }
 
-    console.log("Booking Data:", {
+    if (!/^01[0-9]{9}$/.test(formData.mobileNumber.replace(/[\s-]/g, ""))) {
+      alert("Please enter a valid Bangladeshi mobile number (e.g., 01XXXXXXXXX)");
+      return;
+    }
+
+    setSubmitting(true);
+
+    console.log('Booking Data:', {
       busScheduleId,
       selectedSeats,
       ...formData
     });
 
-    // Implement booking submission logic here
+    try {
+      const bookingRequest = {
+        busScheduleId,
+        seatIds: selectedSeats,
+        boardingStopCode: formData.boardingPoint,
+        droppingStopCode: formData.droppingPoint,
+        passengerName: formData.passengerName,
+        mobileNumber: "+88" + formData.mobileNumber,
+        passengerGender: formData.gender
+      };
+
+      const response = await bookSeats(bookingRequest);
+
+      if (response.success) {
+        const bookingSummaryEncoded = encodeURIComponent(JSON.stringify(response.bookingSummary));
+        router.push(`booking/confirmation?data=${bookingSummaryEncoded}`);
+      } else {
+        alert(response.message || 'Booking failed. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('Booking error:', err);
+      alert(err.message || 'Failed to book seats. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const formatTime = (dateString: string) => {
@@ -235,6 +274,18 @@ function BookingContent() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold">Passenger Name<span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                placeholder="Enter passenger name"
+                value={formData.passengerName}
+                onChange={(e) => setFormData({ ...formData, passengerName: e.target.value })}
+                required
+                className="border border-border p-3 rounded-sm focus:outline-none"
+              />
             </div>
 
             <div className="flex flex-col gap-2">
