@@ -41,6 +41,11 @@ namespace BusTicketReservation.Infrastructure.Repositories
             await _db.Tickets.AddAsync(ticket);
         }
 
+        public async Task AddRangeAsync(List<Ticket> tickets)
+        {
+            await _db.Tickets.AddRangeAsync(tickets);
+        }
+
         public async Task<Ticket?> GetTicketByIdAsync(Guid ticketId)
         {
             return await _db.Tickets.FindAsync(ticketId);

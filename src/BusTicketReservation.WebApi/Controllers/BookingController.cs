@@ -87,52 +87,5 @@ namespace BusTicketReservation.WebApi.Controllers
                 });
             }
         }
-
-        [HttpPost("confirm-ticket/{ticketId}")]
-        public async Task<IActionResult> ConfirmTicket(Guid ticketId)
-        {
-            try
-            {
-                if (ticketId == Guid.Empty)
-                {
-                    return BadRequest(new
-                    {
-                        Success = false,
-                        Message = "Invalid ticket ID"
-                    });
-                }
-
-                var result = await _bookingService.ConfirmTicketAsync(ticketId);
-
-                if (!result.Success)
-                {
-                    if (result.Message.Contains("not found"))
-                    {
-                        return NotFound(new
-                        {
-                            Success = false,
-                            Message = result.Message
-                        });
-                    }
-
-                    return BadRequest(new
-                    {
-                        Success = false,
-                        Message = result.Message
-                    });
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error confirming ticket");
-                return StatusCode(500, new
-                {
-                    Success = false,
-                    Message = "An error occurred while confirming the ticket"
-                });
-            }
-        }
     }
 }

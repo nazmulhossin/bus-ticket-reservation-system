@@ -93,35 +93,49 @@ namespace BusTicketReservation.Application.Services
                         Message = "Bus schedule not found"
                     };
                 }
- 
-                // Validate seat exists and belongs to the bus
-                var seat = await _seatRepository.GetSeatByIdAsync(input.SeatId);
-                if (seat == null)
+
+                // Validate all seats exist and belong to the bus
+                var seats = await _seatRepository.GetSeatsByIdsAsync(input.SeatIds);
+                var seatDictionary = seats.ToDictionary(s => s.Id, s => s);
+
+                // Check for invalid seats
+                foreach (var seatId in input.SeatIds)
                 {
-                    return new BookSeatResultDto
+                    if (!seatDictionary.ContainsKey(seatId))
                     {
-                        Success = false,
-                        Message = "Seat not found"
-                    };
+                        return new BookSeatResultDto
+                        {
+                            Success = false,
+                            Message = "Seat not found"
+                        };
+                    }
+                    else if (seatDictionary[seatId].BusId != busSchedule.BusId)
+                    {
+                        return new BookSeatResultDto
+                        {
+                            Success = false,
+                            Message = "Seat does not belong to this bus"
+                        };
+                    }
                 }
 
-                if (seat.BusId != busSchedule.BusId)
+                // Check for already booked seats for this schedule
+                var bookedSeats = new List<string>();
+                foreach (var seat in seats)
                 {
-                    return new BookSeatResultDto
+                    bool isBooked = await _ticketRepository.IsSeatBookedForScheduleAsync(seat.Id, input.BusScheduleId);
+                    if (isBooked)
                     {
-                        Success = false,
-                        Message = "Seat does not belong to this bus"
-                    };
+                        bookedSeats.Add(seat.SeatNumber);
+                    }
                 }
 
-                // Check if seat is already booked for this schedule
-                var isAlreadyBooked = await _ticketRepository.IsSeatBookedForScheduleAsync(input.SeatId, input.BusScheduleId);
-                if (isAlreadyBooked)
+                if (bookedSeats.Any())
                 {
                     return new BookSeatResultDto
                     {
                         Success = false,
-                        Message = "Seat is not available for booking"
+                        Message = $"These seats are not available: {string.Join(", ", bookedSeats)}"
                     };
                 }
 
@@ -147,7 +161,7 @@ namespace BusTicketReservation.Application.Services
                     };
                 }
 
-                // Update or create passenger
+                // Create or update passenger
                 var passenger = await _passengerRepository.GetByMobileNumberAsync(input.MobileNumber);
                 if (passenger == null)
                 {
@@ -167,23 +181,28 @@ namespace BusTicketReservation.Application.Services
                     passenger.Gender = input.PassengerGender;
                 }
 
-                // Create ticket
-                var ticket = new Ticket
+                // Create tickets
+                var totalPrice = 0;
+                foreach (var seat in seats)
                 {
-                    Id = Guid.NewGuid(),
-                    BusScheduleId = input.BusScheduleId,
-                    SeatId = input.SeatId,
-                    PassengerId = passenger.Id,
-                    BoardingStopId = boardingStop.Id,
-                    DroppingStopId = droppingStop.Id,
-                    Price = busSchedule.Price,
-                    BookingDate = DateTime.UtcNow
-                };
+                    var ticket = new Ticket
+                    {
+                        Id = Guid.NewGuid(),
+                        BusScheduleId = input.BusScheduleId,
+                        SeatId = seat.Id,
+                        PassengerId = passenger.Id,
+                        BoardingStopId = boardingStop.Id,
+                        DroppingStopId = droppingStop.Id,
+                        Price = busSchedule.Price,
+                        BookingDate = DateTime.UtcNow
+                    };
 
-                await _ticketRepository.AddAsync(ticket);
-
+                    totalPrice += busSchedule.Price;
+                    await _ticketRepository.AddAsync(ticket);
+                }
+                
                 // Update seat status
-                await _seatRepository.UpdateSeatStatusAsync(input.SeatId, SeatStatus.Booked);
+                await _seatRepository.UpdateSeatStatusRangeAsync(input.SeatIds, SeatStatus.Booked);
 
                 // Save all changes and commit transaction
                 await _unitOfWork.SaveChangesAsync();
@@ -193,87 +212,28 @@ namespace BusTicketReservation.Application.Services
                 var boardingTime = busSchedule.JourneyDate.Date.Add(busSchedule.DepartureTime.Add(boardingStop.TimeOffset));
                 var droppingTime = busSchedule.JourneyDate.Date.Add(busSchedule.DepartureTime.Add(droppingStop.TimeOffset));
 
-                var ticketDetails = new TicketDetailsDto
+                var bookingSummary = new BookingSummaryDto
                 {
-                    TicketId = ticket.Id,
                     PassengerName = passenger.Name,
                     MobileNumber = passenger.MobileNumber,
                     Gender = passenger.Gender.ToString(),
                     CompanyName = busSchedule.Bus.CompanyName,
                     BusName = busSchedule.Bus.BusName,
-                    SeatNumber = seat.SeatNumber,
+                    SeatNumbers = seats.OrderBy(s => s.SeatNumber).Select(s => s.SeatNumber).ToList(),
                     BoardingStop = boardingStop.StopName,
                     DroppingStop = droppingStop.StopName,
                     BoardingTime = boardingTime,
                     DroppingTime = droppingTime,
                     JourneyDate = busSchedule.JourneyDate,
-                    Price = ticket.Price,
-                    BookingDate = ticket.BookingDate
+                    TotalPrice = totalPrice,
+                    BookingDate = DateTime.UtcNow
                 };
 
                 return new BookSeatResultDto
                 {
                     Success = true,
-                    Message = $"Seat {seat.SeatNumber} booked successfully",
-                    TicketDetails = ticketDetails
-                };
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
-        }
-
-        public async Task<ConfirmTicketResultDto> ConfirmTicketAsync(Guid ticketId)
-        {
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
-            {
-                // Validate ticket exists
-                var ticket = await _ticketRepository.GetTicketByIdAsync(ticketId);
-                if (ticket == null)
-                {
-                    return new ConfirmTicketResultDto
-                    {
-                        Success = false,
-                        Message = "Ticket not found"
-                    };
-                }
-
-                // Get seat information
-                var seat = await _seatRepository.GetSeatByIdAsync(ticket.SeatId);
-                if (seat == null)
-                {
-                    return new ConfirmTicketResultDto
-                    {
-                        Success = false,
-                        Message = "Seat not found"
-                    };
-                }
-
-                // Check if seat is already sold
-                if (seat.Status == SeatStatus.Sold)
-                {
-                    return new ConfirmTicketResultDto
-                    {
-                        Success = false,
-                        Message = "Ticket is already confirmed"
-                    };
-                }
-
-                // Update seat status to Sold
-                await _seatRepository.UpdateSeatStatusAsync(ticket.SeatId, SeatStatus.Sold);
-
-                // Save all changes and commit transaction
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
-
-                return new ConfirmTicketResultDto
-                {
-                    Success = true,
-                    Message = $"Ticket confirmed successfully",
+                    Message = $"Seat(s) booked successfully",
+                    BookingSummary = bookingSummary
                 };
             }
             catch

@@ -8,6 +8,7 @@ namespace BusTicketReservation.Application.Contracts.Interfaces.Repositories
         Task<Dictionary<Guid, Ticket>> GetTicketsForBusScheduleAsync(Guid busScheduleId);
         Task<bool> IsSeatBookedForScheduleAsync(Guid seatId, Guid busScheduleId);
         Task AddAsync(Ticket ticket);
+        Task AddRangeAsync(List<Ticket> tickets);
         Task<Ticket?> GetTicketByIdAsync(Guid ticketId);
     }
 }

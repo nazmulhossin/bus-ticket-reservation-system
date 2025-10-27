@@ -9,8 +9,8 @@ namespace BusTicketReservation.Application.Contracts.DTOs
         [NotEmptyGuid(ErrorMessage = "Bus schedule ID is required")]
         public Guid BusScheduleId { get; set; }
 
-        [NotEmptyGuid(ErrorMessage = "Seat ID is required")]
-        public Guid SeatId { get; set; }
+        [Required(ErrorMessage = "At least one seat must be selected")]
+        public List<Guid> SeatIds { get; set; } = new List<Guid>();
 
         [Required(ErrorMessage = "Boarding stop code is required")]
         public string BoardingStopCode { get; set; } = string.Empty;

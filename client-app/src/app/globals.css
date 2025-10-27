@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-accent: var(--accent);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-footerBg: var(--footerBg);
+}
+
+:root {
+  --background: #ffffff;
+  --primary: #d32f2f;
+  --primary-dark: #b71c1c;
+  --accent: #2e7d32;
+  --text-primary: #27313b;
+  --text-secondary: #7f8c8d;
+  --border: #e0e6ed;
+  --success: #27ae60;
+  --footerBg: #1a202c;
+}
+
+@layer utilities {
+  .custom-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .custom-transition {
+    @apply transition-all duration-300;
+  }
+
+  .custom-shadow {
+    @apply shadow-[0_8px_24px_rgba(2,132,199,0.15)];
+  }
+
+  .btn {
+    @apply outline-none cursor-pointer transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white rounded-md;
+  }
+}
+
+@layer components {
+  .footer-section {
+    h4 {
+      @apply text-white mb-4 text-[1.05rem] font-semibold;
+    }
+
+    ul li {
+      @apply mb-3;
+    }
+
+    a {
+      @apply text-text-secondary no-underline transition-colors duration-300;
+    }
+
+    a:hover {
+      @apply text-primary;
+    }
+  }
+}
