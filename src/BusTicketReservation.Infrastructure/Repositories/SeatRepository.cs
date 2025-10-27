@@ -29,6 +29,13 @@ namespace BusTicketReservation.Infrastructure.Repositories
             return await _db.Seats.FindAsync(seatId);
         }
 
+        public async Task<List<Seat>> GetSeatsByIdsAsync(List<Guid> seatIds)
+        {
+            return await _db.Seats
+                .Where(s => seatIds.Contains(s.Id))
+                .ToListAsync();
+        }
+
         public async Task UpdateSeatStatusAsync(Guid seatId, SeatStatus status)
         {
             var seat = await GetSeatByIdAsync(seatId);
@@ -37,6 +44,20 @@ namespace BusTicketReservation.Infrastructure.Repositories
                 seat.Status = status;
                 _db.Seats.Update(seat);
             }
+        }
+
+        public async Task UpdateSeatStatusRangeAsync(List<Guid> seatIds, SeatStatus status)
+        {
+            var seats = await _db.Seats
+                .Where(s => seatIds.Contains(s.Id))
+                .ToListAsync();
+
+            foreach (var seat in seats)
+            {
+                seat.Status = status;
+            }
+
+            _db.Seats.UpdateRange(seats);
         }
     }
 }

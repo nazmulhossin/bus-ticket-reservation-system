@@ -7,6 +7,8 @@ namespace BusTicketReservation.Application.Contracts.Interfaces.Repositories
     {
         Task<List<Seat>> GetSeatsByBusIdAsync(Guid busId);
         Task<Seat?> GetSeatByIdAsync(Guid seatId);
+        Task<List<Seat>> GetSeatsByIdsAsync(List<Guid> seatIds);
         Task UpdateSeatStatusAsync(Guid seatId, SeatStatus status);
+        Task UpdateSeatStatusRangeAsync(List<Guid> seatIds, SeatStatus status);
     }
 }
