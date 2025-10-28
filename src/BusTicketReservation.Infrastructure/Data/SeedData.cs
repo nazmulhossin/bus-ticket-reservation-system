@@ -349,7 +349,7 @@ namespace BusTicketReservation.Infrastructure.Data
             var rows = (int)Math.Ceiling((double)totalSeats / seatsPerRow);
             var seatCounter = 0;
 
-            for (int row = 1; row < rows; row++)
+            for (int row = 1; row <= rows; row++)
             {
                 char rowLetter = (char)('A' + row - 1);
 
