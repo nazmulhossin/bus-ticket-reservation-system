@@ -8,15 +8,15 @@ namespace BusTicketReservation.Tests.Services
 {
     public class SearchServiceTests
     {
-        private readonly Mock<IBusScheduleRepository> _mockBusScheduleRepo;
-        private readonly Mock<ITicketRepository> _mockTicketRepo;
+        private readonly Mock<IBusScheduleRepository> _busScheduleRepositoryMock;
+        private readonly Mock<ITicketRepository> _ticketRepositoryMock;
         private readonly SearchService _searchService;
 
         public SearchServiceTests()
         {
-            _mockBusScheduleRepo = new Mock<IBusScheduleRepository>();
-            _mockTicketRepo = new Mock<ITicketRepository>();
-            _searchService = new SearchService(_mockBusScheduleRepo.Object, _mockTicketRepo.Object);
+            _busScheduleRepositoryMock = new Mock<IBusScheduleRepository>();
+            _ticketRepositoryMock = new Mock<ITicketRepository>();
+            _searchService = new SearchService(_busScheduleRepositoryMock.Object, _ticketRepositoryMock.Object);
         }
 
         [Fact]
@@ -31,11 +31,11 @@ namespace BusTicketReservation.Tests.Services
             var busSchedule = CreateTestBusSchedule(scheduleId, from, to, journeyDate);
             var busSchedules = new List<BusSchedule> { busSchedule };
 
-            _mockBusScheduleRepo
+            _busScheduleRepositoryMock
                 .Setup(repo => repo.GetSchedulesByRouteAndDateAsync(from, to, journeyDate.ToUniversalTime()))
                 .ReturnsAsync(busSchedules);
 
-            _mockTicketRepo
+            _ticketRepositoryMock
                 .Setup(repo => repo.GetBookedSeatsCountAsync(scheduleId))
                 .ReturnsAsync(10);
 
@@ -61,10 +61,10 @@ namespace BusTicketReservation.Tests.Services
             Assert.Equal(expectedStartTime, availableBus.StartTime);
             Assert.Equal(expectedArrivalTime, availableBus.ArrivalTime);
 
-            _mockBusScheduleRepo.Verify(repo =>
+            _busScheduleRepositoryMock.Verify(repo =>
                 repo.GetSchedulesByRouteAndDateAsync(from, to, journeyDate.ToUniversalTime()),
                 Times.Once);
-            _mockTicketRepo.Verify(repo =>
+            _ticketRepositoryMock.Verify(repo =>
                 repo.GetBookedSeatsCountAsync(scheduleId),
                 Times.Once);
         }
@@ -85,11 +85,11 @@ namespace BusTicketReservation.Tests.Services
 
             var busSchedules = new List<BusSchedule> { lateSchedule, earlySchedule };
 
-            _mockBusScheduleRepo
+            _busScheduleRepositoryMock
                 .Setup(repo => repo.GetSchedulesByRouteAndDateAsync(from, to, journeyDate.ToUniversalTime()))
                 .ReturnsAsync(busSchedules);
 
-            _mockTicketRepo
+            _ticketRepositoryMock
                 .Setup(repo => repo.GetBookedSeatsCountAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(0);
 
@@ -141,7 +141,7 @@ namespace BusTicketReservation.Tests.Services
             var to = "dhaka_gabtoli";
             var journeyDate = DateTime.UtcNow.AddDays(1);
 
-            _mockBusScheduleRepo
+            _busScheduleRepositoryMock
                 .Setup(repo => repo.GetSchedulesByRouteAndDateAsync(from, to, journeyDate.ToUniversalTime()))
                 .ReturnsAsync(new List<BusSchedule>());
 
@@ -164,11 +164,11 @@ namespace BusTicketReservation.Tests.Services
 
             var busSchedule = CreateTestBusSchedule(scheduleId, from, to, journeyDate);
 
-            _mockBusScheduleRepo
+            _busScheduleRepositoryMock
                 .Setup(repo => repo.GetSchedulesByRouteAndDateAsync(from, to, journeyDate.ToUniversalTime()))
                 .ReturnsAsync(new List<BusSchedule> { busSchedule });
 
-            _mockTicketRepo
+            _ticketRepositoryMock
                 .Setup(repo => repo.GetBookedSeatsCountAsync(scheduleId))
                 .ReturnsAsync(42); // All seats booked
 
@@ -191,11 +191,11 @@ namespace BusTicketReservation.Tests.Services
 
             var busSchedule = CreateTestBusSchedule(scheduleId, from, to, journeyDate);
 
-            _mockBusScheduleRepo
+            _busScheduleRepositoryMock
                 .Setup(repo => repo.GetSchedulesByRouteAndDateAsync(from, to, journeyDate.ToUniversalTime()))
                 .ReturnsAsync(new List<BusSchedule> { busSchedule });
 
-            _mockTicketRepo
+            _ticketRepositoryMock
                 .Setup(repo => repo.GetBookedSeatsCountAsync(scheduleId))
                 .ReturnsAsync(0);
 
@@ -214,11 +214,7 @@ namespace BusTicketReservation.Tests.Services
             Assert.Equal(expectedArrivalTime, result[0].ArrivalTime);
         }
 
-        private BusSchedule CreateTestBusSchedule(
-            Guid scheduleId,
-            string fromStopCode = "kushtia_mojompur",
-            string toStopCode = "dhaka_gabtoli",
-            DateTime? journeyDate = null)
+        private BusSchedule CreateTestBusSchedule(Guid scheduleId, string fromStopCode = "kushtia_mojompur", string toStopCode = "dhaka_gabtoli", DateTime? journeyDate = null)
         {
             var route = new Route
             {
@@ -247,8 +243,8 @@ namespace BusTicketReservation.Tests.Services
                 BusId = bus.Id,
                 RouteId = route.Id,
                 JourneyDate = journeyDate ?? DateTime.UtcNow.AddDays(1).Date,
-                DepartureTime = TimeSpan.FromHours(8), // 8:00 AM
-                ArrivalTime = TimeSpan.FromHours(13),  // 1:00 PM
+                DepartureTime = TimeSpan.FromHours(8),
+                ArrivalTime = TimeSpan.FromHours(13),
                 Price = 500,
                 Bus = bus,
                 Route = route
